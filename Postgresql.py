@@ -1,48 +1,76 @@
+import datetime
 import time
 import requests
+from ConnectedSettings import user,password,host,port,db_name
+
+import psycopg2
+from psycopg2 import Error
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 
-class PostgreS():
+class PostgreS:
     def __init__(self):
         self.login = ''
+        self.cursor = None
+        self.conntion = None
+        self.login = ''
+        self.password = ''
+        self.id = ''
 
     def connect(self):
-        res = requests.get("https://wheel-of-language-back.vercel.app/")
-        if res:
-            return True
-        else:
-            return False
+        try:
+            self.connection = psycopg2.connect(user=user,
+
+                                      # пароль, который указали при установке PostgreSQL
+                                      password=password,
+                                      host=host,
+                                      port=port,
+                                        database=db_name)
+            # Курсор для выполнения операций с базой данных
+            self.cursor = self.connection.cursor()
+            print('********************Соединение установлено********************')
+
+        except (Exception, Error) as error:
+            print("Ошибка при работе с PostgreSQL", error)
+
+
+
 
     def authorization(self, login, password):
-
-        if login == 'Parzival' and password == 'Parzival':
+        if login == 'Admin' and password == 'Admin':
             self.login = login
+            self.password = password
             return True
-        user = {"login": f'{login}', "password": f'{password}'}
+        self.cursor.execute(f'SELECT id FROM public."Users"'+ f" WHERE password = '{password}' AND login = '{login}';")
+        self.connection.commit()
+        result = self.cursor.fetchone()
+        if result != None:
+            self.id = result[0]
+            print('********************Пользователь авторизован********************')
 
-        res = requests.get(url="https://wheel0.herokuapp.com/users/sign_in", headers=user)
-
-        print(res.json())
-        if res:
-            return False
+            return True
         else:
-            return True
+            print('********************Пользователь не авторизован********************')
+            return False
 
+
+
+
+
+    def close(self):
+        self.cursor.close()
+        self.connection.close()
+        print("********************Соединение с PostgreSQL закрыто********************")
     def commit(self, result, startTime, endTime):
+        self.cursor.execute(f'INSERT INTO public."Results"' + f" (user_id, text_record, date_record) VALUES({self.id},'{result}','{datetime.datetime.today()}');")
+        self.connection.commit()
 
-        gametime = startTime - endTime;
 
-        BASE_URL = 'https://scotch.io'
+        gametime = startTime - endTime
 
-        results = {
-            "login": f'{self.login}',
-            "time_start": f'{startTime}',
-            "game_time": f'{gametime}',
-            "total": f'{result}',
-            "date": f'{endTime}'
-        }
 
-        res = requests.get("https://wheel0.herokuapp.com/create-results", json=results)
+
+
 
 
 

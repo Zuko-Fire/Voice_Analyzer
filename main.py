@@ -17,7 +17,7 @@ import Postgresql
 class DataBaseThread(QtCore.QObject):
     log = ""
     password = ""
-    postgre = Postgresql.PostgreS
+    postgre = Postgresql.PostgreS()
     Isconnect = QtCore.pyqtSignal(bool)
     Isautorization = QtCore.pyqtSignal(bool)
     resultText = ""
@@ -31,10 +31,11 @@ class DataBaseThread(QtCore.QObject):
         #     print("connect")
         # else:
         #     self.Isconnect.emit(True)
+        self.postgre.connect()
 
 
     def authorization(self):
-        if self.postgre.authorization(self=self.postgre, login=self.log, password=self.password):
+        if self.postgre.authorization( login=self.log, password=self.password):
             self.Isautorization.emit(True)
             # print(self.log)
         else:
