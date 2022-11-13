@@ -131,6 +131,6 @@ def result():
         resultText = Result_Case.case9()
 
     else:
-        resultText = 'Not result to this situation'
+        resultText = 'No result to this situation'
 
     return resultText

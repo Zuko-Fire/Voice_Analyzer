@@ -48,7 +48,7 @@ class DataBaseThread(QtCore.QObject):
 
     def send(self):
         print("ff")
-        self.postgre.commit(self=self.postgre, result=self.resultText, startTime=self.startTime, endTime=self.endTime)
+        self.postgre.commit(result=self.resultText, startTime=self.startTime, endTime=self.endTime)
 
 class External(QThread):
     word = {}
@@ -65,7 +65,9 @@ class External(QThread):
         if self.result == '' or self.result == 'Error':
             self.selfUI.error()
         else:
+            print('************************CallResult*************************')
             self.selfUI.result_widget(self.result)
+
 
 
 
@@ -87,7 +89,6 @@ class Window(QtWidgets.QMainWindow):
         self.database.Isconnect.connect(self.onConnected)
         self.thread.started.connect(self.database.connected)
         self.database.Isautorization.connect(self.goStep)
-        # self.rassbery = RasberryPY_SystemLogic.Rasberry
         self.thread.start()
         self.init_UI()
 
@@ -147,7 +148,10 @@ class Window(QtWidgets.QMainWindow):
         self.database.resultText = self.result
         self.database.startTime = self.startTime
         self.database.endTime = self.endTime
+        messege = QtWidgets.QMessageBox()
+        messege.setText('Результаты сохранены в базе данных')
         self.thread.childEvent(self.database.send())
+        messege.exec_()
 
     def onCountChanged(self, value):
         self.ui.TimeEdit.setText(value)
@@ -156,14 +160,15 @@ class Window(QtWidgets.QMainWindow):
         self.ui.buttonReconnected.setVisible(value)
 
     def result_widget(self, result):
-
-        self.ui.widget_2.close()
-        self.ui.widget_3.show()
-        self.rassbery.offPin()
-        self.result = result
         self.endTime = datetime.datetime.today()
-        self.ui.plainTextResult.setPlainText(result)
         self.ui.time.setText(str(self.endTime.strftime("%M.%S")))
+        self.result = result
+        print('************************Widget2*************************')
+        self.ui.widget_2.close()
+        print('************************Widget2*************************')
+        self.ui.widget_3.show()
+        print('************************Widget3*************************')
+
 
     def back(self):
         self.ui.widget_2.close()
